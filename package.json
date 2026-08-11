@@ -1,0 +1,1 @@
+{"name":"field-service-contact-inbox","version":"1.0.0","private":true,"type":"module","scripts":{"demo":"tsx scripts/send-work-order.ts","test":"tsx src/work_order.test.ts"},"devDependencies":{"tsx":"^4.19.0","typescript":"^5.6.0"}}
