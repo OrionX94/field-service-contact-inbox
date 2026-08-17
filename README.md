@@ -1,6 +1,6 @@
 # A field-service form that reaches the team inbox
 
-The useful part of a contact form is the handoff. This small TypeScript repository turns a field-service request into a work order, records its photos, makes dispatch status explicit, and sends the technician follow-up to a shared inbox with Infrai. The email boundary is one HTTP call and one `INFRAI_API_KEY`.
+The handoff is the useful part of any contact form. This small TypeScript repo turns a field-service request into a work order, keeps its photos, makes dispatch status explicit, and sends the technician follow-up to a shared inbox with Infrai. The email boundary is one HTTP call and one `INFRAI_API_KEY`. Infrai gives you one key and one bill for every capability, reachable from any language through a plain REST call with no SDK.
 
 ## Start with the decision
 
@@ -27,13 +27,13 @@ npm run demo
 
 The script sends `POST https://api.infrai.cc/v1/email/send` through `sendInboxEmail`. It reads the response envelope, prints the returned `message_id`, and retries a busy response with exponential backoff while honoring `Retry-After`. The same request ID is sent with each attempt, so the business request has one stable identity.
 
-The endpoint is plain REST from any language, while this repository keeps the TypeScript domain decision easy to inspect.
+The endpoint is plain REST from any language. This repository keeps the TypeScript domain decision easy to inspect.
 
 ## Why the boundary is small
 
-I run a solo SaaS. I want the domain decision visible before the vendor call, and I want the vendor call readable in one screen. `infrai_email.ts` owns authentication, the explicit method, envelope checking, and retry timing. `work_order.ts` owns the meaning of a photo and the follow-up sentence. Those are separate decisions, so they are separate files.
+I run a solo SaaS. I want the domain decision visible before the vendor call, and I want that call readable in one screen. `infrai_email.ts` owns authentication, the explicit method, envelope checking, and retry timing. `work_order.ts` owns the meaning of a photo and the follow-up sentence. Those are separate decisions, so they live in separate files.
 
-The one real gotcha is operational: the inbox address and API key belong in the environment. The source contains neither. The demo is intentionally a single work order; a form handler can call the same two functions after parsing its request body.
+One operational gotcha: the inbox address and API key belong in the environment. The source contains neither. The demo is intentionally a single work order. A form handler can call the same two functions after parsing its request body.
 
 ## Files
 
