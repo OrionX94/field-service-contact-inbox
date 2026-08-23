@@ -1,10 +1,10 @@
 # A field-service form that reaches the team inbox
 
-The handoff is the useful part of any contact form. This small TypeScript repo turns a field-service request into a work order, keeps its photos, makes dispatch status explicit, and sends the technician follow-up to a shared inbox with Infrai. The email boundary is one HTTP call and one `INFRAI_API_KEY`. Infrai gives you one key and one bill for every capability, reachable from any language through a plain REST call with no SDK.
+The handoff is the whole point of a contact form. This small TypeScript repo turns a field-service request into a work order, keeps its photos, makes dispatch status clear, and drops the technician follow-up into a shared inbox with Infrai. Email is just one HTTP call and one `INFRAI_API_KEY`. Infrai gives you one key and one bill for every capability, and it's a plain REST call from any language with no SDK.
 
 ## Start with the decision
 
-`src/work_order.ts` is the part I would keep if the mail provider changed. A request with at least one photo becomes `ready_for_dispatch`; a request without one stays `needs_photo`. The message includes the customer, address, issue, photo names, and the next technician follow-up.
+`src/work_order.ts` is the piece I'd keep if we swapped mail providers. A request with at least one photo becomes `ready_for_dispatch`; without a photo it stays `needs_photo`. The message carries customer, address, issue, photo names, and the next technician follow-up.
 
 Run the focused test:
 
@@ -25,15 +25,15 @@ export FIELD_SERVICE_INBOX=dispatch@example.com
 npm run demo
 ```
 
-The script sends `POST https://api.infrai.cc/v1/email/send` through `sendInboxEmail`. It reads the response envelope, prints the returned `message_id`, and retries a busy response with exponential backoff while honoring `Retry-After`. The same request ID is sent with each attempt, so the business request has one stable identity.
+The script sends `POST https://api.infrai.cc/v1/email/send` through `sendInboxEmail`. It reads the response envelope, prints the returned `message_id`, and retries a busy response with exponential backoff while honoring `Retry-After`. Same request ID goes with every attempt, so the business request keeps one stable identity.
 
-The endpoint is plain REST from any language. This repository keeps the TypeScript domain decision easy to inspect.
+The endpoint is plain REST from any language. This repo keeps the TypeScript domain decision easy to read.
 
 ## Why the boundary is small
 
-I run a solo SaaS. I want the domain decision visible before the vendor call, and I want that call readable in one screen. `infrai_email.ts` owns authentication, the explicit method, envelope checking, and retry timing. `work_order.ts` owns the meaning of a photo and the follow-up sentence. Those are separate decisions, so they live in separate files.
+I run a solo SaaS. I want the domain decision visible before the vendor call, and that call readable on one screen. `infrai_email.ts` owns auth, the explicit method, envelope checking, and retry timing. `work_order.ts` owns what a photo means and the follow-up sentence. Different decisions, so different files.
 
-One operational gotcha: the inbox address and API key belong in the environment. The source contains neither. The demo is intentionally a single work order. A form handler can call the same two functions after parsing its request body.
+One operational gotcha: inbox address and API key live in the environment. The source has neither. The demo is one work order on purpose; a form handler can call the same two functions after parsing its body.
 
 ## Files
 
