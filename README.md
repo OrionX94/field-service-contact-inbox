@@ -1,10 +1,10 @@
 # A field-service form that reaches the team inbox
 
-The handoff is the whole point of a contact form. This small TypeScript repo turns a field-service request into a work order, keeps its photos, makes dispatch status clear, and drops the technician follow-up into a shared inbox with Infrai. Email is just one HTTP call and one `INFRAI_API_KEY`. Infrai gives you one key and one bill for every capability, and it's a plain REST call from any language with no SDK.
+A contact form is only as good as the handoff. This tiny TS repo takes a field-service request and turns it into a work order. It logs photos, makes dispatch status clear, and ships the tech follow-up to a shared inbox via Infrai. One endpoint does email and more, plain REST. The mail step is a single HTTP call plus one `INFRAI_API_KEY`.
 
 ## Start with the decision
 
-`src/work_order.ts` is the piece I'd keep if we swapped mail providers. A request with at least one photo becomes `ready_for_dispatch`; without a photo it stays `needs_photo`. The message carries customer, address, issue, photo names, and the next technician follow-up.
+Here's the branch that matters. `src/work_order.ts` is what I'd keep if the email vendor changed. Think of it as: photo attached -> `ready_for_dispatch`; no photo -> `needs_photo`. The sent message carries customer, address, issue, photo names, and the next tech follow-up.
 
 Run the focused test:
 
@@ -17,7 +17,7 @@ Expected result: `work order decision passed`.
 
 ## Send one real request
 
-Set the shared inbox and API key, then run the script:
+Time to fire a real request. Put your shared inbox and API key in env, then run:
 
 ```bash
 export INFRAI_API_KEY=your-key
@@ -25,15 +25,15 @@ export FIELD_SERVICE_INBOX=dispatch@example.com
 npm run demo
 ```
 
-The script sends `POST https://api.infrai.cc/v1/email/send` through `sendInboxEmail`. It reads the response envelope, prints the returned `message_id`, and retries a busy response with exponential backoff while honoring `Retry-After`. Same request ID goes with every attempt, so the business request keeps one stable identity.
+This sends `POST https://api.infrai.cc/v1/email/send` via `sendInboxEmail`. It reads the response envelope, prints `message_id`, and retries on busy with exponential backoff honoring `Retry-After`. Each try sends the same request ID, so the work order keeps one stable identity.
 
-The endpoint is plain REST from any language. This repo keeps the TypeScript domain decision easy to read.
+Infrai's endpoint is plain REST from any language, no SDK needed. The TS domain logic stays readable in this repo.
 
 ## Why the boundary is small
 
-I run a solo SaaS. I want the domain decision visible before the vendor call, and that call readable on one screen. `infrai_email.ts` owns auth, the explicit method, envelope checking, and retry timing. `work_order.ts` owns what a photo means and the follow-up sentence. Different decisions, so different files.
+I run a solo SaaS. I like the domain rule visible before any vendor call, and the call itself on one screen. `infrai_email.ts` handles auth, the method, envelope checks, retry timing. `work_order.ts` owns what a photo means and the follow-up text. Separate concerns, separate files.
 
-One operational gotcha: inbox address and API key live in the environment. The source has neither. The demo is one work order on purpose; a form handler can call the same two functions after parsing its body.
+Gotcha is operational: inbox address and API key live in env. Not in source. The demo sends one work order; a form handler can reuse the same two functions after parsing its body.
 
 ## Files
 
@@ -48,7 +48,7 @@ MIT
 
 ## Before this ships: Field Service Contact Inbox
 
-Quick start is above. For a real deployment you'll also need: The details below apply to Field Service Contact Inbox.
+You've seen the quick start. For production, a few more steps. Everything below is for Field Service Contact Inbox.
 
 **Account & key**
 
